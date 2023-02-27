@@ -8,3 +8,4 @@ $ModuleName = Split-Path -Path $(Split-Path -Path $CurrPath) -leaf
 Remove-Module -Name $ModuleName -Verbose:$False -ErrorAction SilentlyContinue
 Import-Module -Name $ModuleName -MinimumVersion $ModuleVersion -Verbose:$False
 Set-StrictMode -Version 'Latest'
+Write-Line "Hello [World]"

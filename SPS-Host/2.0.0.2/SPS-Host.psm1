@@ -1,4 +1,4 @@
-Write-Verbose "Processing : $($MyInvocation.MyCommand)"
+Write-Verbose "Importing Module : $($MyInvocation.MyCommand)"
 Function Write-Line {
 <#
     .SYNOPSIS
@@ -613,4 +613,391 @@ Function Write-Line {
         #endregion Function closing  DO NOT REMOVE
     }
 }
-Export-ModuleMember -Function 'Write-Line'
+Function Read-Line {
+<#
+    .SYNOPSIS
+        Display a question and wait user to answer using Read-Host
+    .DESCRIPTION
+        Display a question and wait user to type the authorized answer
+    .EXAMPLE
+        $ReturnValue = Read-Line -NoQuit
+        Will display 'Continue [YES/NO] or [E] to Exit :'
+    .EXAMPLE
+        $ReturnValue = Read-Line -Message "Is it ok"
+        Will display 'Is it ok, Continue [YES/NO] or [E] to Exit :'
+    .PARAMETER Message
+        Message displayed
+    .PARAMETER NoQuit
+        Default text will be '$Message Continue [YES/NO] :'
+    .PARAMETER DefaultColor
+        Specify default text color. Default 'Cyan'
+    .PARAMETER AltColor
+        Specify text between OpenChar and CloseChar color. Default 'Green'    
+    .INPUTS
+        System.Array
+    .OUTPUTS
+        System.Boolean
+    .NOTES
+        Written by Swiss Powershell
+    .FUNCTIONALITY
+        To display a question to host
+    .FORWARDHELPTARGETNAME <read-Host>
+#>
+    [CMDLetBinding()]
+    Param(
+        [String]
+            $Message,
+        [Switch]
+            $NoQuit,
+        [ConsoleColor]
+            $DefaultColor="Cyan",
+        [ConsoleColor]
+            $AltColor="Green"
+    )
+    BEGIN {
+        #region Function initialisation DO NOT REMOVE
+        [String] ${FunctionName} = $MyInvocation.MyCommand
+        [DateTime] ${FunctionEnterTime} = [DateTime]::Now
+        Write-Verbose "Entering : $($FunctionName)"
+        #endregion Function initialisation DO NOT REMOVE
+    }
+    PROCESS {
+        #region Function Processing DO NOT REMOVE
+        Write-Verbose "Processing : $($FunctionName)"
+        #region Function Processing DO NOT REMOVE
+        Do {
+            if ($Message){$Line = "$($Message), "}
+            if ($NoQuit){
+                $Line = "$($Line)Continue [YES/NO]"
+            }Else{
+                $Line = "$($Line)Continue [YES/NO] or [E] to Exit"
+            }
+            Write-Line $Line -NoNewLine -DefaultColor $DefaultColor -AltColor $AltColor
+            [String]$Answer = Read-Host " "
+            Write-Verbose "Answer is : [$($Answer)]"
+            $LAnswer = $Answer.ToLower()
+            Switch ($LAnswer){
+                "yes" {
+                    $Ret_Val = $True
+                    $ValidChoice = $True
+                    }
+                "y" {
+                    $Ret_Val = $True
+                    $ValidChoice = $True
+                    }
+                "no" {
+                    $Ret_Val = $False
+                    $ValidChoice = $True
+                    }
+                "n" {
+                    $Ret_Val = $False
+                    $ValidChoice = $True
+                    }
+                "exit" {
+                    $Ret_Val = $null
+                        if ($NoQuit){
+                            Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
+                            $ValidChoice = $False
+                        }Else{
+                            $ValidChoice = $True
+                        }
+                    }
+                "e" {
+                    $Ret_Val = $null
+                        if ($NoQuit){
+                            Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
+                            $ValidChoice = $False
+                        }Else{
+                            $ValidChoice = $True
+                        }
+                    }
+                "quit" {
+                    $Ret_Val = $null
+                        if ($NoQuit){
+                            Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
+                            $ValidChoice = $False
+                        }Else{
+                            $ValidChoice = $True
+                        }
+                    }
+                "q" {
+                    $Ret_Val = $null
+                        if ($NoQuit){
+                            Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
+                            $ValidChoice = $False
+                        }Else{
+                            $ValidChoice = $True
+                        }
+                    }
+                default {
+                    Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
+                    $ValidChoice = $False
+                }
+            }
+        }Until($ValidChoice)
+    }
+    END {
+        #region Function closing  DO NOT REMOVE
+        $TimeSpent = New-TimeSpan -Start $FunctionEnterTime -Verbose:$False -ErrorAction SilentlyContinue
+        [String] ${TimeSpentString} = ''
+        Switch ($TimeSpent) {
+            {$_.TotalDays -gt 1} {
+                $TimeSpentString = "$($_.TotalDays) D."
+                BREAK
+            }
+            {$_.TotalHours -gt 1} {
+                $TimeSpentString = "$($_.TotalHours) h."
+                BREAK
+            }
+            {$_.TotalMinutes -gt 1} {
+                $TimeSpentString = "$($_.TotalMinutes) min."
+                BREAK
+            }
+            {$_.TotalSeconds -gt 1} {
+                $TimeSpentString = "$($_.TotalSeconds) s."
+                BREAK
+            }
+            {$_.TotalMilliseconds -gt 1} {
+                $TimeSpentString = "$($_.TotalMilliseconds) ms."
+                BREAK
+            }
+            Default {
+                $TimeSpentString = "$($_.Ticks) Ticks"
+                BREAK
+            }
+        }
+        Write-Verbose "Ending : $($FunctionName) - TimeSpent : $($TimeSpentString)"
+        #endregion Function closing  DO NOT REMOVE
+        Write-Output $Ret_Val
+    }
+}
+Function Write-ChoiceMenu {
+<#
+    .SYNOPSIS
+        Display a Choice Menu
+    .DESCRIPTION
+        This function will display a Choice Menu
+    .EXAMPLE
+        $ReturnValue = Write-ChoiceMenu -Menu $ChoiceMenu -Title "My Menu"
+        Will display a choice menu with "My Menu" as Title and $ChoiceMenu as content
+    .PARAMETER Menu
+        Content of the menu
+    .PARAMETER Title
+        Title of the choice list
+    .INPUTS
+        System.Array
+    .OUTPUTS
+        System.String
+    .NOTES
+        Written by Swiss Powershell
+    .FUNCTIONALITY
+        To display a Choice Menu
+    .FORWARDHELPTARGETNAME <Write-Host>
+#>
+    [CMDLetBinding()]
+    Param(
+        [Parameter(
+            Mandatory=$True,
+            Position=1,
+            ValueFromPipeline=$True
+        )]
+        [Array]
+            $Menu,
+        [ConsoleColor]
+            $MenuColor = "Cyan",
+        [ConsoleColor]
+            $MenuAltColor = "Green",
+        [ConsoleColor]
+            $ChoiceColor = "Yellow",
+        [String]
+            $Title,
+        [ValidateSet("None","Single","SingleBold","Double","Mixed1","Mixed2","HalfBlock","Block","LightShade","MediumShade","DarkShade")]
+        [String]
+            $TitleBorderFormat = "Double",
+        [ConsoleColor]
+            $TitleBorderColor = "Magenta",
+        [ConsoleColor]
+            $TitleColor = $MenuColor
+        )
+    BEGIN {
+        #region Function initialisation DO NOT REMOVE
+        [String] ${FunctionName} = $MyInvocation.MyCommand
+        [DateTime] ${FunctionEnterTime} = [DateTime]::Now
+        Write-Verbose "Entering : $($FunctionName)"
+        #endregion Function initialisation DO NOT REMOVE
+    }
+    PROCESS {
+        #region Function Processing DO NOT REMOVE
+        Write-Verbose "Processing : $($FunctionName)"
+        #region Function Processing DO NOT REMOVE
+        if ($Menu -and $Menu.Count -gt 1){
+            Do {
+                if ($Title) {
+                    if ($TitleBorderStyle -eq "None"){
+                        Write-Line -Message $Title -DefaultColor $TitleColor
+                    }Else{
+                        Write-Line -Message $Title -Border -BorderFormat $TitleBorderFormat -BorderColor $TitleBorderColor -DefaultColor $TitleColor 
+                    }
+                }
+                Write-Host ""
+                $MenuCounter = 1
+                ForEach ($Choice in $Menu){
+                    Write-Line "`t$($MenuCounter))" -DefaultColor $ChoiceColor -NoNewLine
+                    Write-Line "`t$($Choice.Item)" -DefaultColor $MenuColor -AltColor $MenuAltColor
+                    $MenuCounter ++
+                }
+                Write-Host ""
+                Write-Line "Please make your choice [1-$($Menu.Count)] or [Enter] to Exit" -NoNewLine -DefaultColor $MenuColor -AltColor $MenuAltColor
+                $UserChoice = Read-Host " "
+                Try{
+                    $UserChoice = [convert]::ToInt32($UserChoice)
+                }
+                Catch {}
+                if ($UserChoice -eq "") {
+                    $RetVal = $Null
+                    $UserExited = $True
+                }Elseif (($UserChoice -gt 0) -and ($UserChoice -le $($Menu.Count))){
+                    $RetVal = $($Menu.Action[$UserChoice - 1])
+                    $UserExited = $True
+                }Else{
+                    Write-Host ""
+                    Write-Line "`t!! Error... [$($UserChoice)] is not a valid choice !!" -DefaultColor Yellow -AltColor RED
+                    Write-Host ""
+                }
+            }Until($UserExited)
+        }Else{
+            Throw "'Menu' must contain at least 2 entry... First use Add-ChoiceItem to Create a Menu"
+        }
+    }
+    END {
+        #region Function closing  DO NOT REMOVE
+        $TimeSpent = New-TimeSpan -Start $FunctionEnterTime -Verbose:$False -ErrorAction SilentlyContinue
+        [String] ${TimeSpentString} = ''
+        Switch ($TimeSpent) {
+            {$_.TotalDays -gt 1} {
+                $TimeSpentString = "$($_.TotalDays) D."
+                BREAK
+            }
+            {$_.TotalHours -gt 1} {
+                $TimeSpentString = "$($_.TotalHours) h."
+                BREAK
+            }
+            {$_.TotalMinutes -gt 1} {
+                $TimeSpentString = "$($_.TotalMinutes) min."
+                BREAK
+            }
+            {$_.TotalSeconds -gt 1} {
+                $TimeSpentString = "$($_.TotalSeconds) s."
+                BREAK
+            }
+            {$_.TotalMilliseconds -gt 1} {
+                $TimeSpentString = "$($_.TotalMilliseconds) ms."
+                BREAK
+            }
+            Default {
+                $TimeSpentString = "$($_.Ticks) Ticks"
+                BREAK
+            }
+        }
+        Write-Verbose "Ending : $($FunctionName) - TimeSpent : $($TimeSpentString)"
+        #endregion Function closing  DO NOT REMOVE
+        Write-Output $RetVal
+    }
+}
+Function Add-ChoiceItem {
+<#
+    .SYNOPSIS
+        Create / Update a choice Menu to be used with Write-ChoiceMenu
+    .DESCRIPTION
+        This function will create or update a choice menu that can be used with the Write-ChoiceMenu cmdlet
+    .EXAMPLE
+        $ChoiceMenu = Add-ChoiceItem -MenuItem "Get the process list" -MenuAction "Get-Process"
+        Will Create a Menu then add a choice displayed as "Get the process list" and this choice will return "Get-Process"
+    .EXAMPLE
+        $ChoiceMenu = Add-ChoiceItem -Menu $ChoiceMenu -MenuItem "Get the time" -MenuAction "Get-Date -Format HH:mm:ss"
+        Will add a choice to $ChoiceMenu displayed as "Get the time" and this choice will return "Get-Date -Format HH:mm:ss"
+    .EXAMPLE
+        $ChoiceMenu = Add-ChoiceItem -Menu $ChoiceMenu -MenuItem "Get the date" -MenuAction "Get-Date -Format dd.MM.yyyy"
+        Will add a choice to $ChoiceMenu displayed as "Get the date" and this choice will return "Get-Date -Format dd.MM.yyyy"
+    .PARAMETER Menu
+        Existing menu to update
+    .PARAMETER MenuItem
+        Item to display in the menu
+    .PARAMETER MenuAction
+        Item to return when MenuItem is chosen
+    .INPUTS
+        System.String
+    .OUTPUTS
+        System.String
+    .NOTES
+        Written by Swiss Powershell
+    .FUNCTIONALITY
+        To Make a Choice Menu
+    .FORWARDHELPTARGETNAME <Write-Host>
+#>
+    [CMDLetBinding()]
+    Param(
+        [Array]
+            $Menu,
+        [Parameter(
+            Mandatory=$True
+        )]
+        [String]
+            $MenuItem,
+        [String]
+            $MenuAction=$MenuItem
+        )
+    BEGIN {
+        #region Function initialisation DO NOT REMOVE
+        [String] ${FunctionName} = $MyInvocation.MyCommand
+        [DateTime] ${FunctionEnterTime} = [DateTime]::Now
+        Write-Verbose "Entering : $($FunctionName)"
+        #endregion Function initialisation DO NOT REMOVE
+        if (-not $Menu){$Menu = @()}
+    
+    }
+    PROCESS {
+        #region Function Processing DO NOT REMOVE
+        Write-Verbose "Processing : $($FunctionName)"
+        #region Function Processing DO NOT REMOVE
+        $ChoiceItem = New-Object PSObject -Property @{
+            Item = $MenuItem
+            Action = $MenuAction
+        }
+        $Menu += $ChoiceItem
+    }
+    END {
+        #region Function closing  DO NOT REMOVE
+        $TimeSpent = New-TimeSpan -Start $FunctionEnterTime -Verbose:$False -ErrorAction SilentlyContinue
+        [String] ${TimeSpentString} = ''
+        Switch ($TimeSpent) {
+            {$_.TotalDays -gt 1} {
+                $TimeSpentString = "$($_.TotalDays) D."
+                BREAK
+            }
+            {$_.TotalHours -gt 1} {
+                $TimeSpentString = "$($_.TotalHours) h."
+                BREAK
+            }
+            {$_.TotalMinutes -gt 1} {
+                $TimeSpentString = "$($_.TotalMinutes) min."
+                BREAK
+            }
+            {$_.TotalSeconds -gt 1} {
+                $TimeSpentString = "$($_.TotalSeconds) s."
+                BREAK
+            }
+            {$_.TotalMilliseconds -gt 1} {
+                $TimeSpentString = "$($_.TotalMilliseconds) ms."
+                BREAK
+            }
+            Default {
+                $TimeSpentString = "$($_.Ticks) Ticks"
+                BREAK
+            }
+        }
+        Write-Verbose "Ending : $($FunctionName) - TimeSpent : $($TimeSpentString)"
+        #endregion Function closing  DO NOT REMOVE
+        Write-Output $Menu
+    }
+}
