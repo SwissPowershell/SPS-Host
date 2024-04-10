@@ -133,7 +133,7 @@ Function Write-Line {
                 [Int32]
                     ${MaxLength}
                 )
-            if ($Host.Name -eq 'ConsoleHost'){
+            if ($Host.Name -like '*Host'){
                 #only change if in a console
                 $PSHost = get-host
                 $PSWindow = $PSHost.ui.rawui
@@ -141,7 +141,7 @@ Function Write-Line {
                 $Currentsize = $PSWindow.buffersize
                 if ($CurrentSize.Width -le $MaxLength){
                     Write-Verbose 'Changing Host Buffer size'
-                    $NewSize = $Currentsize
+                    $NewSize = $Currentsize 
                     $NewSize.width = $MaxLength
                     $PSWindow.buffersize = $NewSize
                 }
@@ -164,7 +164,7 @@ Function Write-Line {
                     ${Length},
                 [Int32]
                     ${LeadingSpace} = 2
-                 )
+                )
             Switch ($BorderFormat){
                 'Single' {
                     $TopLeft     = [char]0x250c
@@ -582,33 +582,7 @@ Function Write-Line {
     END {
         #region Function closing  DO NOT REMOVE
         $TimeSpent = New-TimeSpan -Start $FunctionEnterTime -Verbose:$False -ErrorAction SilentlyContinue
-        [String] ${TimeSpentString} = ''
-        Switch ($TimeSpent) {
-            {$_.TotalDays -gt 1} {
-                $TimeSpentString = "$($_.TotalDays) D."
-                BREAK
-            }
-            {$_.TotalHours -gt 1} {
-                $TimeSpentString = "$($_.TotalHours) h."
-                BREAK
-            }
-            {$_.TotalMinutes -gt 1} {
-                $TimeSpentString = "$($_.TotalMinutes) min."
-                BREAK
-            }
-            {$_.TotalSeconds -gt 1} {
-                $TimeSpentString = "$($_.TotalSeconds) s."
-                BREAK
-            }
-            {$_.TotalMilliseconds -gt 1} {
-                $TimeSpentString = "$($_.TotalMilliseconds) ms."
-                BREAK
-            }
-            Default {
-                $TimeSpentString = "$($_.Ticks) Ticks"
-                BREAK
-            }
-        }
+        [String] ${TimeSpentString} = '';Switch ($TimeSpent) {{$_.TotalDays -gt 1} {$TimeSpentString = "$($_.TotalDays) D.";BREAK}{$_.TotalHours -gt 1} {$TimeSpentString = "$($_.TotalHours) h.";BREAK}{$_.TotalMinutes -gt 1}{$TimeSpentString = "$($_.TotalMinutes) min.";BREAK}{$_.TotalSeconds -gt 1}{$TimeSpentString = "$($_.TotalSeconds) s.";BREAK}{$_.TotalMilliseconds -gt 1}{$TimeSpentString = "$($_.TotalMilliseconds) ms.";BREAK}Default{$TimeSpentString = "$($_.Ticks) Ticks";BREAK}}
         Write-Verbose "Ending : $($FunctionName) - TimeSpent : $($TimeSpentString)"
         #endregion Function closing  DO NOT REMOVE
     }
@@ -650,9 +624,9 @@ Function Read-Line {
         [Switch]
             $NoQuit,
         [ConsoleColor]
-            $DefaultColor="Cyan",
+            $DefaultColor='Cyan',
         [ConsoleColor]
-            $AltColor="Green"
+            $AltColor='Green'
     )
     BEGIN {
         #region Function initialisation DO NOT REMOVE
@@ -675,25 +649,21 @@ Function Read-Line {
             Write-Line $Line -NoNewLine -DefaultColor $DefaultColor -AltColor $AltColor
             [String]$Answer = Read-Host " "
             Write-Verbose "Answer is : [$($Answer)]"
-            $LAnswer = $Answer.ToLower()
-            Switch ($LAnswer){
-                "yes" {
-                    $Ret_Val = $True
-                    $ValidChoice = $True
+            Switch ($Answer.ToLower()){
+                'yes' {$Ret_Val = $ValidChoice = $True}
+                'y' {$Ret_Val = $ValidChoice = $True}
+                'no' {$Ret_Val = $ValidChoice = $True}
+                'n' {$Ret_Val = $ValidChoice = $True}
+                'exit' {
+                        $Ret_Val = $null
+                        if ($NoQuit){
+                            Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
+                            $ValidChoice = $False
+                        }Else{
+                            $ValidChoice = $True
+                        }
                     }
-                "y" {
-                    $Ret_Val = $True
-                    $ValidChoice = $True
-                    }
-                "no" {
-                    $Ret_Val = $False
-                    $ValidChoice = $True
-                    }
-                "n" {
-                    $Ret_Val = $False
-                    $ValidChoice = $True
-                    }
-                "exit" {
+                'e' {
                     $Ret_Val = $null
                         if ($NoQuit){
                             Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
@@ -702,7 +672,7 @@ Function Read-Line {
                             $ValidChoice = $True
                         }
                     }
-                "e" {
+                'quit' {
                     $Ret_Val = $null
                         if ($NoQuit){
                             Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
@@ -711,16 +681,7 @@ Function Read-Line {
                             $ValidChoice = $True
                         }
                     }
-                "quit" {
-                    $Ret_Val = $null
-                        if ($NoQuit){
-                            Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
-                            $ValidChoice = $False
-                        }Else{
-                            $ValidChoice = $True
-                        }
-                    }
-                "q" {
+                'q' {
                     $Ret_Val = $null
                         if ($NoQuit){
                             Write-line "`t! Warning ! [$($Answer)] is not a valid choice..." -AltColor RED -DefaultColor Yellow
@@ -739,35 +700,8 @@ Function Read-Line {
     END {
         #region Function closing  DO NOT REMOVE
         $TimeSpent = New-TimeSpan -Start $FunctionEnterTime -Verbose:$False -ErrorAction SilentlyContinue
-        [String] ${TimeSpentString} = ''
-        Switch ($TimeSpent) {
-            {$_.TotalDays -gt 1} {
-                $TimeSpentString = "$($_.TotalDays) D."
-                BREAK
-            }
-            {$_.TotalHours -gt 1} {
-                $TimeSpentString = "$($_.TotalHours) h."
-                BREAK
-            }
-            {$_.TotalMinutes -gt 1} {
-                $TimeSpentString = "$($_.TotalMinutes) min."
-                BREAK
-            }
-            {$_.TotalSeconds -gt 1} {
-                $TimeSpentString = "$($_.TotalSeconds) s."
-                BREAK
-            }
-            {$_.TotalMilliseconds -gt 1} {
-                $TimeSpentString = "$($_.TotalMilliseconds) ms."
-                BREAK
-            }
-            Default {
-                $TimeSpentString = "$($_.Ticks) Ticks"
-                BREAK
-            }
-        }
+        [String] ${TimeSpentString} = '';Switch ($TimeSpent) {{$_.TotalDays -gt 1} {$TimeSpentString = "$($_.TotalDays) D.";BREAK}{$_.TotalHours -gt 1} {$TimeSpentString = "$($_.TotalHours) h.";BREAK}{$_.TotalMinutes -gt 1}{$TimeSpentString = "$($_.TotalMinutes) min.";BREAK}{$_.TotalSeconds -gt 1}{$TimeSpentString = "$($_.TotalSeconds) s.";BREAK}{$_.TotalMilliseconds -gt 1}{$TimeSpentString = "$($_.TotalMilliseconds) ms.";BREAK}Default{$TimeSpentString = "$($_.Ticks) Ticks";BREAK}}
         Write-Verbose "Ending : $($FunctionName) - TimeSpent : $($TimeSpentString)"
-        #endregion Function closing  DO NOT REMOVE
         Write-Output $Ret_Val
     }
 }
@@ -804,18 +738,18 @@ Function Write-ChoiceMenu {
         [Array]
             $Menu,
         [ConsoleColor]
-            $MenuColor = "Cyan",
+            $MenuColor = 'Cyan',
         [ConsoleColor]
-            $MenuAltColor = "Green",
+            $MenuAltColor = 'Green',
         [ConsoleColor]
-            $ChoiceColor = "Yellow",
+            $ChoiceColor = 'Yellow',
         [String]
             $Title,
-        [ValidateSet("None","Single","SingleBold","Double","Mixed1","Mixed2","HalfBlock","Block","LightShade","MediumShade","DarkShade")]
+        [ValidateSet('None','Single','SingleBold','Double','Mixed1','Mixed2','HalfBlock','Block','LightShade','MediumShade','DarkShade')]
         [String]
-            $TitleBorderFormat = "Double",
+            $TitleBorderFormat = 'Double',
         [ConsoleColor]
-            $TitleBorderColor = "Magenta",
+            $TitleBorderColor = 'Magenta',
         [ConsoleColor]
             $TitleColor = $MenuColor
         )
@@ -833,7 +767,7 @@ Function Write-ChoiceMenu {
         if ($Menu -and $Menu.Count -gt 1){
             Do {
                 if ($Title) {
-                    if ($TitleBorderStyle -eq "None"){
+                    if ($TitleBorderStyle -eq 'None'){
                         Write-Line -Message $Title -DefaultColor $TitleColor
                     }Else{
                         Write-Line -Message $Title -Border -BorderFormat $TitleBorderFormat -BorderColor $TitleBorderColor -DefaultColor $TitleColor 
@@ -846,23 +780,23 @@ Function Write-ChoiceMenu {
                     Write-Line "`t$($Choice.Item)" -DefaultColor $MenuColor -AltColor $MenuAltColor
                     $MenuCounter ++
                 }
-                Write-Host ""
+                Write-Host ''
                 Write-Line "Please make your choice [1-$($Menu.Count)] or [Enter] to Exit" -NoNewLine -DefaultColor $MenuColor -AltColor $MenuAltColor
                 $UserChoice = Read-Host " "
                 Try{
                     $UserChoice = [convert]::ToInt32($UserChoice)
                 }
                 Catch {}
-                if ($UserChoice -eq "") {
+                if ($UserChoice -eq '') {
                     $RetVal = $Null
                     $UserExited = $True
                 }Elseif (($UserChoice -gt 0) -and ($UserChoice -le $($Menu.Count))){
                     $RetVal = $($Menu.Action[$UserChoice - 1])
                     $UserExited = $True
                 }Else{
-                    Write-Host ""
+                    Write-Host ''
                     Write-Line "`t!! Error... [$($UserChoice)] is not a valid choice !!" -DefaultColor Yellow -AltColor RED
-                    Write-Host ""
+                    Write-Host ''
                 }
             }Until($UserExited)
         }Else{
@@ -872,33 +806,7 @@ Function Write-ChoiceMenu {
     END {
         #region Function closing  DO NOT REMOVE
         $TimeSpent = New-TimeSpan -Start $FunctionEnterTime -Verbose:$False -ErrorAction SilentlyContinue
-        [String] ${TimeSpentString} = ''
-        Switch ($TimeSpent) {
-            {$_.TotalDays -gt 1} {
-                $TimeSpentString = "$($_.TotalDays) D."
-                BREAK
-            }
-            {$_.TotalHours -gt 1} {
-                $TimeSpentString = "$($_.TotalHours) h."
-                BREAK
-            }
-            {$_.TotalMinutes -gt 1} {
-                $TimeSpentString = "$($_.TotalMinutes) min."
-                BREAK
-            }
-            {$_.TotalSeconds -gt 1} {
-                $TimeSpentString = "$($_.TotalSeconds) s."
-                BREAK
-            }
-            {$_.TotalMilliseconds -gt 1} {
-                $TimeSpentString = "$($_.TotalMilliseconds) ms."
-                BREAK
-            }
-            Default {
-                $TimeSpentString = "$($_.Ticks) Ticks"
-                BREAK
-            }
-        }
+        [String] ${TimeSpentString} = '';Switch ($TimeSpent) {{$_.TotalDays -gt 1} {$TimeSpentString = "$($_.TotalDays) D.";BREAK}{$_.TotalHours -gt 1} {$TimeSpentString = "$($_.TotalHours) h.";BREAK}{$_.TotalMinutes -gt 1}{$TimeSpentString = "$($_.TotalMinutes) min.";BREAK}{$_.TotalSeconds -gt 1}{$TimeSpentString = "$($_.TotalSeconds) s.";BREAK}{$_.TotalMilliseconds -gt 1}{$TimeSpentString = "$($_.TotalMilliseconds) ms.";BREAK}Default{$TimeSpentString = "$($_.Ticks) Ticks";BREAK}}
         Write-Verbose "Ending : $($FunctionName) - TimeSpent : $($TimeSpentString)"
         #endregion Function closing  DO NOT REMOVE
         Write-Output $RetVal
@@ -945,7 +853,7 @@ Function Add-ChoiceItem {
         [String]
             $MenuItem,
         [String]
-            $MenuAction=$MenuItem
+            $MenuAction = $MenuItem
         )
     BEGIN {
         #region Function initialisation DO NOT REMOVE
@@ -999,5 +907,160 @@ Function Add-ChoiceItem {
         Write-Verbose "Ending : $($FunctionName) - TimeSpent : $($TimeSpentString)"
         #endregion Function closing  DO NOT REMOVE
         Write-Output $Menu
+    }
+}
+Function Format-XML {
+    [CmdletBinding(DefaultParameterSetName='FromFile')]
+    Param(
+        [Parameter(
+            Mandatory=$True,
+            Position=1,
+            ValueFromPipeline=$True,
+            ParameterSetName='FromFile'
+        )]
+        [String]
+            ${XMLFile},
+            [Parameter(
+                Mandatory=$True,
+                Position=1,
+                ValueFromPipeline=$false,
+                ParameterSetName='FromXMLDoc'
+            )]
+            [XML]
+                ${XMLDoc},
+            [Parameter(
+                Position=2
+            )]
+            [Int32] 
+                ${Indent} = 4,
+            [Switch]
+                ${AsString}
+        )
+    BEGIN {
+        if ($PSCmdlet.ParameterSetName -eq 'FromFile') {
+            try {
+                [XML] $XMLDoc = Get-Content -Path $XMLFile -ErrorAction stop
+            }
+            Catch {
+                Throw "Can't read the XML file $($XMLFile)"
+            }
+        }
+    }
+    PROCESS {
+        $XmlWriterSettings = New-Object System.Xml.XmlWriterSettings
+        $XmlWriterSettings.Indent = $true
+        $XmlWriterSettings.IndentChars = (' ' * $Indent)
+        Try {
+            # Try to retrieve the XML document encoding 
+            $Encoding = $XMLDoc.FirstChild.Encoding
+            Switch ($Encoding) {
+                'utf-16' {
+                    $XmlWriterSettings.Encoding = [System.Text.Encoding]::Unicode
+                }
+                'Ainsi' {
+                    $XmlWriterSettings.Encoding = [System.Text.Encoding]::Default
+                }
+                'utf-8' {
+                    $XmlWriterSettings.Encoding = [System.Text.Encoding]::UTF8
+                }
+                Default {
+                    Throw "Encoding [$($Encoding)] not supported"
+                }
+            }
+        }Catch {
+            # will use the default XMLWriterSettings encoding => UTF8
+        }
+        # Create a StringWriter to capture the output
+        $StringWriter = New-Object System.IO.StringWriter
+        # Create the XmlTextWriter object with our settings
+        $XmlWriter = [System.Xml.XmlWriter]::Create($StringWriter, $XmlWriterSettings)
+        # Write our XmlDocument to the XmlTextWriter
+        $xmlDoc.WriteTo($XmlWriter)
+        # Close the XmlTextWriter to ensure all data is written
+        $XmlWriter.Close()
+    }
+    END {
+        # Output the indented XML
+        if ($AsString){
+            $StringWriter.ToString()
+        }else{
+            [XML] $StringWriter
+        }
+    }
+}
+Function Get-XMLHash {
+    [CmdletBinding(DefaultParameterSetName='FromFile')]
+    Param(
+        [Parameter(
+            Mandatory=$True,
+            Position=1,
+            ValueFromPipeline=$True,
+            ParameterSetName='FromFile'
+        )]
+        [String]
+            ${XMLFile},
+        [Parameter(
+            Mandatory=$True,
+            Position=1,
+            ValueFromPipeline=$false,
+            ParameterSetName='FromXMLDoc'
+        )]
+        [XML]
+            ${XMLDoc},
+        [Switch]
+            ${UTF16},
+        [Switch]
+            ${UTF8}
+        )
+    BEGIN {
+        if ($PSCmdlet.ParameterSetName -like 'FromFile') {
+            try {
+                [XML] $XMLDoc = Get-Content -Path $XMLFile -ErrorAction stop
+            }
+            Catch {
+                Throw "Can't read the XML file $($XMLFile)"
+            }
+        }
+        if ($UTF16 -or $UTF8) {
+            $DetectEncoding = $false
+        }else{
+            $DetectEncoding = $true
+        }
+        if ($DetectEncoding) {
+            Try {
+                $Encoding = $XMLDoc.FirstChild.Encoding
+                Switch ($Encoding) {
+                    'utf-16' {
+                        $UTF16 = $True
+                    }
+                    'utf-8' {
+                        $UTF8 = $True
+                    }
+                    Default {
+                        Throw "Encoding [$($Encoding)] not supported"
+                    }
+                }
+            }Catch {
+                Throw "Can't detect the XML's encoding... Please use -UTF16, -Ainsi or -UTF8 to specify the encoding"
+            }
+        }
+    }
+    PROCESS {
+        [String] $NormalizedXML = Format-XML -XMLDoc $XMLDoc -Indent 4 -AsString
+        $sha256 = New-Object System.Security.Cryptography.SHA256CryptoServiceProvider
+        # Compute hash
+        if ($UTF16){
+            Write-Verbose "Getting hash as UTF16"
+            $hash = $sha256.ComputeHash([Text.Encoding]::Unicode.GetBytes($NormalizedXML))
+        }elseif ($UTF8){
+            Write-Verbose "Getting hash as UTF8"
+            $hash = $sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($NormalizedXML))
+        }
+        # Convert hash to hexadecimal string
+        $hashString = [BitConverter]::ToString($hash) -replace '-', ''
+    }
+    END {
+        # return the 64 char sha256 hash  
+        return $hashString
     }
 }
