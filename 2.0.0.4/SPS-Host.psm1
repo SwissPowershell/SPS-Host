@@ -138,20 +138,22 @@ Function Write-Line {
                     $PSWindow = $PSHost.ui.rawui
                     #Change BufferSize
                     $Currentsize = $PSWindow.buffersize
-                    if ($CurrentSize.Width -le $MaxLength){
-                        Write-Verbose 'Changing Host Buffer size'
-                        $NewSize = $Currentsize 
-                        $NewSize.width = $MaxLength
-                        $PSWindow.buffersize = $NewSize
-                    }
-                    #Change WindowsSize
-                    $CurrentSize = $PSWindow.windowsize
-                    if ($CurrentSize.Width -le $MaxLength){
-                        Write-Verbose 'Changing Host Windows size'
-                        $NewSize = $Currentsize
-                        $NewSize.width = $MaxLength
-                        $PSWindow.windowsize = $NewSize
-                    }
+                    Try {
+                        if ($CurrentSize.Width -le $MaxLength){
+                            Write-Verbose 'Changing Host Buffer size'
+                            $NewSize = $Currentsize 
+                            $NewSize.width = $MaxLength
+                            $PSWindow.buffersize = $NewSize
+                        }
+                        #Change WindowsSize
+                        $CurrentSize = $PSWindow.windowsize
+                        if ($CurrentSize.Width -le $MaxLength){
+                            Write-Verbose 'Changing Host Windows size'
+                            $NewSize = $Currentsize
+                            $NewSize.width = $MaxLength
+                            $PSWindow.windowsize = $NewSize
+                        }
+                    }Catch{}
                 }
             }
             Function Get-WLBorder {
